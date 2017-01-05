@@ -5,7 +5,6 @@ using namespace std;
 class Sudoku{
 
 public:
-	string rawSudoku;
 
 	Sudoku(){
 		memset(Solved, false, sizeof Solved);
@@ -31,9 +30,35 @@ public:
 		return;
 	}
 
-	void copy(Sudoku* F){
-		rawSudoku = F->rawSudoku;
-		parseSudoku(rawSudoku);
+	// Returns 81 character long string of initial state of sudoku.
+	string rawProblem(){
+		return rawSudoku;
+	}
+
+	// Returns 81 character long string of current state of sudoku.
+	string curState(){
+		string s = "";
+		char n[10] = {'0','1','2','3','4','5','6','7','8','9'};
+		for(int i=0; i<9; i++)
+			for(int j=0; j<9; j++)
+				s += n[read(i,j)];
+		
+		return s;
+	}
+
+	// Copy raw sudoku problem
+	void copyRaw(Sudoku* F){
+		memset(Solved, false, sizeof Solved);
+		memset(sudoku, false, sizeof sudoku);
+		parseSudoku(F->rawProblem());
+		return;
+	}
+
+	// Copy current state of sudoku
+	void copyCurState(Sudoku* F){
+		memset(Solved, false, sizeof Solved);
+		memset(sudoku, false, sizeof sudoku);
+		parseSudoku(F->curState());
 		return;
 	}
 
@@ -218,7 +243,7 @@ public:
 		return curSolved;
 	}
 
-	int Strat2(){
+	int SolveSinglePositionValues(){
 
 		buildGuesses();
 		int Row = 0;
@@ -251,35 +276,18 @@ public:
 			}while(solved()==false && t>0);
 		
 			do{
-				t = Strat2();
+				t = SolveSinglePositionValues();
 				iter++; curSolved += t;
 			}while(solved()==false && t>0);
 		}
 		
-		if(!solved()){
-			// Not so preferred method
-			int fusr, fusc; bool slvd = false;
-			
-			for(int i=0; i<9 && slvd; i++)
-				for(int j=0; j<9 && slvd; j++)
-					if(Solved[i][j]==false)
-						for(int g=1; g<10; g++)
-							if(guess[i][j][g]){
-								write(i,j,g,true);
-								solve();
-								if(solved()){
-									slvd=true;
-									break;
-								}
-							}
-		}
-
 		printf("Solved in %d Iterations. :D\n", iter);
 		printSudoku();
 		return;
 	}
 
 private:
+	string rawSudoku;	// Initial state of sudoku.
 	int sudoku[10][10]; // sudoku table.
 	int Solved[10][10]; // solved status of (r,c) position of sudoku.
 	bool guess[10][10][10]; // Possibility of (g) at (r,c) position in [r][c][g].
@@ -287,15 +295,13 @@ private:
 
 	// Writes values to sudoku array safely.
 	bool write(int r, int c, int f, bool overwrite=false){
-		if(overwrite){
-			sudoku[r][c] = f;
-			return true;
-		}
-
 		if(Solved[r][c]) 
 			return false;
 
 		sudoku[r][c] = f;
+
+		// TODO :: remove f from guesses in r row and c column and (r,c) box. EFFICIENT WRITE.
+
 		return Solved[r][c] = (f!=0);
 	}
 

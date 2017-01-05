@@ -4,7 +4,7 @@ using namespace std;
 
 int main(){
 	freopen("sdk.txt", "r", stdin);
-	// freopen("out.txt", "w", stdout);
+	freopen("out.txt", "w", stdout);
 
 	string T; int x;
 	int solv[2] = {0,0};
